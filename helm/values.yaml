@@ -1,0 +1,62 @@
+image:
+  repository: asauchyts/containers-task
+  tag: "0.0.6"
+  pullPolicy: IfNotPresent
+
+service:
+  name: user-service
+  type: NodePort
+  port: 8080
+  nodePort: 31000
+
+resources:
+  limits:
+    cpu: 200m
+    memory: 400Mi
+  requests:
+    cpu: 100m
+    memory: 300Mi
+
+environmentVariables:
+  REDIS_HOST:
+    valueFrom:
+      configMapKeyRef:
+        name: redis
+        key: host
+  REDIS_PORT:
+    valueFrom:
+      configMapKeyRef:
+        name: redis
+        key: port
+
+management:
+  enabled: true
+  livenessProbe:
+    initialDelaySeconds: 15
+    path: /actuator/health
+    timeoutSeconds: 5
+  port: 8081
+  readinessProbe:
+    initialDelaySeconds: 20
+    path: /actuator/health
+    timeoutSeconds: 5
+
+hpa:
+  enabled: true
+  pollingInterval: 10
+  minReplicas: 1
+  maxReplicas: 5
+  advanced:
+    scaleUp:
+      policies:
+        - type: Pods
+          value: 1
+          periodSeconds: 10
+    scaleDown:
+      policies:
+        - type: Pods
+          value: 1
+          periodSeconds: 10
+    triggers:
+      - type: cpu
+        target: 50

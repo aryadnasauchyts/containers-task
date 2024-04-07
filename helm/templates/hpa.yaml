@@ -1,0 +1,41 @@
+{{- if .Values.hpa.enabled }}
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ .Values.service.name }}-hpa
+  labels:
+    app: {{ .Values.service.name }}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ .Values.service.name }}
+  minReplicas: {{ .Values.hpa.minReplicas }}
+  maxReplicas: {{ .Values.hpa.maxReplicas }}
+  metrics:
+{{- range $key, $value := .Values.hpa.advanced.triggers }}
+    - type: Resource
+      resource:
+        name: {{ $value.type }}
+        target:
+         type: Utilization
+         averageUtilization: {{ $value.target }}
+{{- end }}
+  behavior:
+      scaleUp:
+        stabilizationWindowSeconds: 20
+        policies:
+{{- range $key, $value := .Values.hpa.advanced.scaleUp.policies }}
+          - type: {{ $value.type }}
+            value: {{ $value.value }}
+            periodSeconds: {{ $value.periodSeconds }}
+{{- end }}
+      scaleDown:
+        stabilizationWindowSeconds: 20
+        policies:
+{{- range $key, $value := .Values.hpa.advanced.scaleUp.policies }}
+          - type: {{ $value.type }}
+            value: {{ $value.value }}
+            periodSeconds: {{ $value.periodSeconds }}
+{{- end }}
+{{- end }}

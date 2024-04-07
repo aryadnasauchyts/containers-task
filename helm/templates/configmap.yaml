@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: redis
+data:
+  host: "10.43.169.162"
+  port: "6379"

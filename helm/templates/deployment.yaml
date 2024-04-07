@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.service.name }}
+  labels:
+    app: {{ .Values.service.name }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Values.service.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.service.name }}
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: 8080
+          env:
+{{- range $key, $value := .Values.environmentVariables }}
+            - name: {{ $key }}
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ $value.valueFrom.configMapKeyRef.name }}
+                  key: {{ $value.valueFrom.configMapKeyRef.key }}
+{{- end }}
+          readinessProbe:
+            initialDelaySeconds: {{ .Values.management.readinessProbe.initialDelaySeconds }}
+            periodSeconds: 10
+            timeoutSeconds: {{ .Values.management.readinessProbe.timeoutSeconds }}
+            httpGet:
+              path: {{ .Values.management.readinessProbe.path }}
+              port: {{ .Values.management.port }}
+          livenessProbe:
+            initialDelaySeconds: {{ .Values.management.livenessProbe.initialDelaySeconds }}
+            periodSeconds: 30
+            timeoutSeconds: {{ .Values.management.livenessProbe.timeoutSeconds }}
+            httpGet:
+              path: {{ .Values.management.livenessProbe.path }}
+              port: {{ .Values.management.port }}
+          resources:
+            limits:
+              cpu: {{ .Values.resources.limits.cpu }}
+              memory: {{ .Values.resources.limits.memory }}
+            requests:
+              cpu: {{ .Values.resources.requests.cpu }}
+              memory: {{ .Values.resources.requests.memory }}

@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.service.name }}
+  labels:
+    app: {{ .Values.service.name }}-service
+    {{- if .Values.management.enabled }}
+    operated-prometheus: "true"
+    {{- end }}
+spec:
+  ports:
+    - name: http
+      port: {{ .Values.service.port }}
+      nodePort: {{ .Values.service.nodePort }}
+{{- if .Values.management.enabled }}
+    - name: management
+      port: {{ .Values.management.port }}
+    {{- end }}
+  selector:
+    app: {{ .Values.service.name }}
+  type: {{ .Values.service.type }}
