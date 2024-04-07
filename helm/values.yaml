@@ -32,12 +32,12 @@ environmentVariables:
 management:
   enabled: true
   livenessProbe:
-    initialDelaySeconds: 15
+    initialDelaySeconds: 5
     path: /actuator/health
     timeoutSeconds: 5
   port: 8081
   readinessProbe:
-    initialDelaySeconds: 20
+    initialDelaySeconds: 10
     path: /actuator/health
     timeoutSeconds: 5
 
